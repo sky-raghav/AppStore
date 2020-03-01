@@ -22,25 +22,39 @@ let appIdLogger = (array) =>{
   });
 }
 
+//just a hack to redirecting can be improved
+let referencer = (appId) =>{
+  let url = 'http://localhost:3000/appdetails?pkg='
+  return url + appId;
+}
+
 //Scrapper function used to scrapedata from playstore
 let scrape = () => {
-  gplay.list({
-    collection: gplay.collection.TOP_FREE,
-    country: 'in',
-  })
-  .then((data) => {
-    console.log('Scrapped data: ', data.length);
-    appIdLogger(data);
-    const bulkOps = data.map(doc => ({
-      updateOne: {
-        filter: {appId: doc.appId},
-        update: doc,
-        upsert: true
-      }
-    }))
-    appModel.bulkWrite(bulkOps)
-    .then(bulkWriteResults => console.log('BULK upsert Done :', bulkWriteResults.result))
-    .catch(err => console.error('BULK upsert error:', err));
+  return new Promise( (resolve,reject) => {
+    gplay.list({
+      collection: gplay.collection.TOP_FREE,
+      country: 'in',
+    })
+    .then((data) => {
+      console.log('Scrapped data: ', data.length);
+      //appIdLogger(data);
+      const bulkOps = data.map(doc => ({
+        updateOne: {
+          filter: {appId: doc.appId},
+          update: doc,
+          upsert: true
+        }
+      }))
+      appModel.bulkWrite(bulkOps)
+      .then( (bulkWriteResults) => {
+        console.log('BULK upsert Done :', bulkWriteResults.result);
+        resolve('Done!!');
+      })
+      .catch((err) => {
+        console.error('BULK upsert error:', err)
+        reject(err);
+      });
+    });
   });
 }
 
@@ -50,6 +64,9 @@ const app = express();
 //bodyparser middleware to access data from request body
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:false}));
+app.use(express.static(path.join(__dirname,'./static')))
+app.set('views',path.join(__dirname,'./views'));
+app.set('view engine','pug')
 
 //default route
 app.get('/', (req,res) => {
@@ -58,7 +75,11 @@ app.get('/', (req,res) => {
       console.log(err);
     } else {
       console.log('Fetched From mongo: ',appData.length);
-      appIdLogger(appData);
+      res.render('index',{
+        appData: appData,
+        referencer: referencer
+      });
+      //appIdLogger(appData);
     }
   });
 })
@@ -72,10 +93,23 @@ app.use('/appdetails', (req,res) =>{
   })
   .then( (data) => {
     console.log(data)
+    res.render('details', {
+      details: data
+    })
   });
 })
 
+app.get('/rescrape',(req, res) => {
+  scrape()
+  .then( () => {
+    res.redirect('/')
+  })
+  .catch((err) => {
+    console.log(err)
+    res.redirect('/');
+  });
+});
+
 app.listen(3000, ()=>{
   console.log('Server is listening on port 3000..');
-  scrape();
 })

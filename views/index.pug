@@ -1,0 +1,53 @@
+extends layout
+
+block content
+  nav.navbar.navbar-expand-lg.navbar-dark.bg-dark.fixed-top
+    .container
+      a.navbar-brand(href='#') App Store
+      button.navbar-toggler(type='button' data-toggle='collapse' data-target='#navbarResponsive' aria-controls='navbarResponsive' aria-expanded='false' aria-label='Toggle navigation')
+        span.navbar-toggler-icon
+      #navbarResponsive.collapse.navbar-collapse
+        ul.navbar-nav.ml-auto
+          li.nav-item.active
+            span.sr-only (current)
+      // Page Content
+  .container
+    .row(style="margin-top: 40px;")
+      .col-lg-3
+        h1.my-4 
+        .list-group
+          a.list-group-item(href='http://localhost:3000/rescrape') Re-Scrape
+          // /.col-lg-3
+      .col-lg-9
+        #carouselExampleIndicators.carousel.slide.my-4(data-ride='carousel')
+          ol.carousel-indicators
+            li.active(data-target='#carouselExampleIndicators' data-slide-to='0')
+            li(data-target='#carouselExampleIndicators' data-slide-to='1')
+            li(data-target='#carouselExampleIndicators' data-slide-to='2')
+          .carousel-inner(role='listbox')
+            .carousel-item.active
+              img.d-block.img-fluid(src='https://www.pngjoy.com/pngl/222/4329761_apple-app-store-logo-grant-s-guide-to.png' alt='First slide' style="height:350px; width:950px;")
+            .carousel-item
+              img.d-block.img-fluid(src='https://img.pngio.com/hd-app-logos-google-play-apple-store-graphic-design-transparent-apple-app-store-logo-png-1747_833.png' alt='Second slide' style="height:350px; width:950px;")
+            .carousel-item
+              img.d-block.img-fluid(src='https://s3-ap-southeast-1.amazonaws.com/tz-mag-media/wp-content/uploads/2018/05/10182849/google-play-download-android-app-logo-png-transparent.png' alt='Third slide' style="height:350px; width:950px;")
+          a.carousel-control-prev(href='#carouselExampleIndicators' role='button' data-slide='prev')
+            span.carousel-control-prev-icon(aria-hidden='true')
+            span.sr-only Previous
+          a.carousel-control-next(href='#carouselExampleIndicators' role='button' data-slide='next')
+          span.carousel-control-next-icon(aria-hidden='true')
+          span.sr-only Next
+        .row
+          each app in appData
+            .col-lg-4.col-md-6.mb-4
+              .card.h-100
+                a(href=referencer(app.appId))
+                  img.card-img-top(src=app.icon alt='')
+                .card-body
+                  h4.card-title
+                    a(href=referencer(app.appId)) #{app.title}
+                  small.text-muted #{app.priceText}
+                  p.card-text
+                    | #{app.summary}
+                .card-footer
+                  small.text-muted Rating: #{app.scoreText}
